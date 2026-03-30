@@ -10,6 +10,7 @@ import (
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/atotto/clipboard"
 )
 
 // Custom message types
@@ -93,7 +94,7 @@ func (m model) Init() tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-// Simulated async download
+// Initiate Download
 func startDownload(choice string, input string) tea.Cmd {
 	var command string
 
@@ -109,7 +110,6 @@ func startDownload(choice string, input string) tea.Cmd {
 	return func() tea.Msg {
 		c := exec.Command("sh", "-c", command)
 		output, err := c.CombinedOutput()
-		syncFiles()
 		if err != nil {
 			log.Printf("Command failed: %v", err)
 		}
@@ -120,12 +120,25 @@ func startDownload(choice string, input string) tea.Cmd {
 
 func syncFiles() tea.Cmd {
 	return func() tea.Msg {
-		c := exec.Command("sh", "-c", "rsync -av --size-only ~/Music/ /run/media/lachlanhenderson/IPOD/Music")
-		output, err := c.CombinedOutput()
-		if err != nil {
-			log.Printf("Command failed: %v", err)
+		commands := []string{
+			`rsync -av --size-only ~/Music/ /run/media/lachlanhenderson/IPOD/Music`,
+			`rsync -av --size-only ~/Podcasts/ /run/media/lachlanhenderson/IPOD/Podcasts`,
+			`rsync -av --size-only ~/Audiobooks/ /run/media/lachlanhenderson/IPOD/Audiobooks`,
 		}
-		log.Printf("Output: %v", string(output))
+
+		for _, cmdStr := range commands {
+			log.Printf("Running: %s", cmdStr)
+
+			c := exec.Command("sh", "-c", cmdStr)
+			output, err := c.CombinedOutput()
+
+			if err != nil {
+				log.Printf("Command failed: %v", err)
+			}
+
+			log.Printf("Output: %s", string(output))
+		}
+
 		return ioMsg("Sync")
 	}
 }
@@ -148,7 +161,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.cursor < len(m.choices)-1 {
 				m.cursor++
 			}
-		case "enter", "space":
+		case "enter":
 			_, isLoading := m.loading[m.cursor]
 			if isLoading {
 				delete(m.loading, m.cursor)
@@ -160,12 +173,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// Focus the text input for this choice
 				if ti, ok := m.textInputs[choice]; ok {
 					ti.Focus()
+					clip, err := clipboard.ReadAll()
+					if err != nil {
+						log.Printf("Clipboard error: %v", err)
+						clip = ""
+					}
+
+					ti.SetValue(clip)
 					m.textInputs[choice] = ti
+					log.Printf("Copied: %s", textinput.Paste())
 				}
 
 				input := ""
 				if ti, ok := m.textInputs[choice]; ok {
 					input = ti.Value()
+					log.Printf("Input: %s", ti.Value())
 				}
 
 				if fn, ok := m.actions[choice]; ok {
@@ -194,6 +216,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		for i, choice := range m.choices {
 			if choice == string(msg) {
 				delete(m.loading, i)
+				ti := m.textInputs[choice]
+				ti.Blur()
+				if ti, ok := m.textInputs[choice]; ok {
+					ti.Blur()
+					ti.SetValue("") // safe to reset
+					m.textInputs[choice] = ti
+				}
 			}
 		}
 		return m, nil
