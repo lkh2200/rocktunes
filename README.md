@@ -15,7 +15,11 @@ https://github.com/user-attachments/assets/628f222c-8623-4521-86df-ea52ffb02f3b
 
 ## How to run
 
-Clone the repository and run 
+- Make your .env file
+    - Add your paths to the example.env file
+    - Change the name to .env
+
+- Clone the repository and run:
 ```
 go mod init
 go mod tidy
