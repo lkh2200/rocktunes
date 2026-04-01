@@ -11,6 +11,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/atotto/clipboard"
+	"github.com/joho/godotenv"
 )
 
 // Custom message types
@@ -121,10 +122,21 @@ func startDownload(choice string, input string) tea.Cmd {
 func syncFiles() tea.Cmd {
 	return func() tea.Msg {
 		commands := []string{
-			`rsync -av --size-only ~/Music/ /run/media/lachlanhenderson/IPOD/Music`,
-			`rsync -av --size-only ~/Podcasts/ /run/media/lachlanhenderson/IPOD/Podcasts`,
-			`rsync -av --size-only ~/Audiobooks/ /run/media/lachlanhenderson/IPOD/Audiobooks`,
+			fmt.Sprintf("rsync -av --size-only %s %s",
+				os.Getenv("SOURCE_MUSIC"),
+				os.Getenv("DEST_MUSIC"),
+			),
+			fmt.Sprintf("rsync -av --size-only %s %s",
+				os.Getenv("SOURCE_PODCASTS"),
+				os.Getenv("DEST_PODCASTS"),
+			),
+			fmt.Sprintf("rsync -av --size-only %s %s",
+				os.Getenv("SOURCE_AUDIOBOOKS"),
+				os.Getenv("DEST_AUDIOBOOKS"),
+			),
 		}
+
+		log.Printf("Commands: %s", commands)
 
 		for _, cmdStr := range commands {
 			log.Printf("Running: %s", cmdStr)
@@ -271,6 +283,7 @@ func (m model) View() tea.View {
 }
 
 func main() {
+	godotenv.Load()
 	f, err := tea.LogToFile("debug.log", "debug")
 	if err != nil {
 		fmt.Println("fatal:", err)
