@@ -136,6 +136,8 @@ func syncFiles() tea.Cmd {
 			),
 		}
 
+		log.Printf("Commands: %s", commands)
+
 		for _, cmdStr := range commands {
 			log.Printf("Running: %s", cmdStr)
 
