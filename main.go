@@ -148,7 +148,6 @@ func syncFiles() tea.Cmd {
 
 			log.Printf("Output: %s", string(output))
 		}
-
 		return ioMsg("Sync")
 	}
 }
