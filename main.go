@@ -84,6 +84,19 @@ func initialModel() model {
 	}
 }
 
+// Function charger model
+
+func charger() string {
+
+	return `                -
+                |
+                |____
+                     |
+                     |
+	`
+
+}
+
 // Initial commands
 func (m model) Init() tea.Cmd {
 	cmds := []tea.Cmd{textinput.Blink}
@@ -250,7 +263,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // Render UI
 func (m model) View() tea.View {
-	s := "Rocktunes !!!\n\n"
+	s := `
+__________               __
+\______   \ ____   ____ |  | _
+ |       _//  _ \_/ ___\|  |/ /___________
+ |    |   (  ♪_♪ )  \___|    ♪ \__    ___/_ __  ____   ____   ______
+ |____|_  /\____/ \___  ♪__|_ \  |    | |  |  \/    \_/ __ \ /  ___/
+        \/            \/     \/  |    | |  |  /   |  \  ___/ \___ \
+                ＿  ♪            |____| |____/|___|  /\___  ♪____  ♪
+               |■|♪                                \/     \/     \/
+               |◎|
+	`
+	s += charger()
 
 	for i, choice := range m.choices {
 		cursor := " "
@@ -281,6 +305,12 @@ func (m model) View() tea.View {
 
 func main() {
 	godotenv.Load()
+	// Clear the log file at startup
+	err := os.WriteFile("debug.log", []byte{}, 0644)
+	if err != nil {
+		fmt.Println("failed to clear log:", err)
+		os.Exit(1)
+	}
 	f, err := tea.LogToFile("debug.log", "debug")
 	if err != nil {
 		fmt.Println("fatal:", err)

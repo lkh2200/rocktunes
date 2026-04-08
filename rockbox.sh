@@ -7,8 +7,7 @@ if [ -z "$URL" ]; then
   exit 1
 fi
 
-BASE_DIR="/run/media/lachlanh/IPOD/Videos/Youtube"
-
+echo "PLAYER_DIRECTORY=$PLAYER_DIRECTORY"
 echo "Fetching metadata..."
 
 CHANNEL=$(yt-dlp --print "%(uploader)s" "$URL" | head -n 1)
@@ -25,7 +24,7 @@ sanitize() {
 SAFE_CHANNEL=$(sanitize "$CHANNEL")
 SAFE_TITLE=$(sanitize "$TITLE")
 
-OUT_DIR="${BASE_DIR}/${SAFE_CHANNEL}"
+OUT_DIR="${dest_video}/${SAFE_CHANNEL}"
 mkdir -p "$OUT_DIR"
 
 TEMP_FILE="${OUT_DIR}/${SAFE_TITLE}_temp.%(ext)s"
