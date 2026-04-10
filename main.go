@@ -22,6 +22,7 @@ type model struct {
 	choices    []string
 	actions    map[string]func(string) tea.Cmd
 	cursor     int
+	charger    chargerModel
 	downloads  map[int]struct{}
 	loading    map[int]struct{}
 	selected   map[int]struct{}
@@ -29,7 +30,33 @@ type model struct {
 	textInputs map[string]textinput.Model
 }
 
+// Charger model
+type chargerModel struct {
+	cable  string
+	head   string
+	colour string
+}
+
 func initialModel() model {
+	var colour, head string
+	if isConnected() {
+		head = "-"
+		colour = "82" // green
+	} else {
+		head = "^"
+		colour = "205" // pink
+	}
+
+	charger := chargerModel{
+		cable: `                %s
+                |
+                |____
+                     |
+                     |`,
+		head:   head,
+		colour: colour,
+	}
+
 	// Choices
 	choices := []string{"Sync", "Youtube Download", "Archive.org Download"}
 
@@ -76,6 +103,7 @@ func initialModel() model {
 	// Return the fully initialized model
 	return model{
 		choices:    choices,
+		charger:    charger,
 		actions:    actions,
 		loading:    make(map[int]struct{}),
 		selected:   make(map[int]struct{}),
@@ -84,17 +112,14 @@ func initialModel() model {
 	}
 }
 
-// Function charger model
+// Render the charger element of the UI
+func renderCharger(charger chargerModel) string {
+	s := fmt.Sprintf(charger.cable, charger.head)
 
-func charger() string {
+	style := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(charger.colour))
 
-	return `                -
-                |
-                |____
-                     |
-                     |
-	`
-
+	return style.Render(s)
 }
 
 // Initial commands
@@ -130,6 +155,15 @@ func startDownload(choice string, input string) tea.Cmd {
 		log.Printf("Output: %v", string(output))
 		return ioMsg(choice)
 	}
+}
+
+// returns a boolean for the connection status of the ipod
+func isConnected() bool {
+	user := os.Getenv("USER")
+	path := "/run/media/" + user + "/IPOD"
+
+	_, err := os.Stat(path)
+	return err == nil
 }
 
 func syncFiles() tea.Cmd {
@@ -274,7 +308,7 @@ __________               __
                |■|♪                                \/     \/     \/
                |◎|
 	`
-	s += charger()
+	s += renderCharger(m.charger) + "\n"
 
 	for i, choice := range m.choices {
 		cursor := " "

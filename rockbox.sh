@@ -7,7 +7,6 @@ if [ -z "$URL" ]; then
   exit 1
 fi
 
-echo "PLAYER_DIRECTORY=$PLAYER_DIRECTORY"
 echo "Fetching metadata..."
 
 CHANNEL=$(yt-dlp --print "%(uploader)s" "$URL" | head -n 1)
