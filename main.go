@@ -155,8 +155,8 @@ func startDownload(choice string, input string) tea.Cmd {
 func connectionMonitor() tea.Cmd {
 	connection := isConnected()
 	log.Print("Monitoring connection :)")
-	time.Sleep(750 * time.Millisecond)
 	return func() tea.Msg {
+		time.Sleep(750 * time.Millisecond)
 		s := fmt.Sprintf("connection: %t", connection)
 		log.Printf("Msg: %s", s)
 		return ioMsg(s)
