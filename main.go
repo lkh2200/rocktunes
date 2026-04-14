@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 
 	"charm.land/bubbles/v2/spinner"
 	"charm.land/bubbles/v2/textinput"
@@ -39,13 +40,6 @@ type chargerModel struct {
 
 func initialModel() model {
 	var colour, head string
-	if isConnected() {
-		head = "-"
-		colour = "82" // green
-	} else {
-		head = "^"
-		colour = "205" // pink
-	}
 
 	charger := chargerModel{
 		cable: `                %s
@@ -129,6 +123,7 @@ func (m model) Init() tea.Cmd {
 	for _, sp := range m.spinners {
 		cmds = append(cmds, sp.Tick)
 	}
+	cmds = append(cmds, connectionMonitor())
 
 	return tea.Batch(cmds...)
 }
@@ -154,6 +149,17 @@ func startDownload(choice string, input string) tea.Cmd {
 		}
 		log.Printf("Output: %v", string(output))
 		return ioMsg(choice)
+	}
+}
+
+func connectionMonitor() tea.Cmd {
+	connection := isConnected()
+	log.Print("Monitoring connection :)")
+	time.Sleep(750 * time.Millisecond)
+	return func() tea.Msg {
+		s := fmt.Sprintf("connection: %t", connection)
+		log.Printf("Msg: %s", s)
+		return ioMsg(s)
 	}
 }
 
@@ -281,6 +287,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		}
+
+		switch string(msg) {
+		case "connection: true":
+			m.charger.head = "-"
+			m.charger.colour = "82" // green
+			return m, connectionMonitor()
+
+		case "connection: false":
+			m.charger.head = "^"
+			m.charger.colour = "205" // pink
+			return m, connectionMonitor()
+		}
+
 		return m, nil
 
 	default:
