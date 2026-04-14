@@ -52,7 +52,11 @@ func initialModel() model {
 	}
 
 	// Choices
-	choices := []string{"Sync", "Youtube Download", "Archive.org Download"}
+	choices := []string{"Sync",
+		"Youtube Download",
+		"Archive.org Download",
+		"Eject",
+	}
 
 	actions := map[string]func(string) tea.Cmd{
 		"Sync": func(_ string) tea.Cmd {
@@ -63,6 +67,9 @@ func initialModel() model {
 		},
 		"Archive.org Download": func(input string) tea.Cmd {
 			return startDownload("Archive.org Download", input)
+		},
+		"Eject": func(input string) tea.Cmd {
+			return eject()
 		},
 	}
 
@@ -202,6 +209,22 @@ func syncFiles() tea.Cmd {
 			log.Printf("Output: %s", string(output))
 		}
 		return ioMsg("Sync")
+	}
+}
+
+func eject() tea.Cmd {
+	return func() tea.Msg {
+		command := fmt.Sprintf("udiskie-umount %s", os.Getenv("PLAYER_DIRECTORY"))
+		c := exec.Command("sh", "-c", command)
+		output, err := c.CombinedOutput()
+
+		if err != nil {
+			log.Printf("Command failed: %v", err)
+		}
+
+		log.Printf("Output: %s", string(output))
+
+		return ioMsg("Eject")
 	}
 }
 
