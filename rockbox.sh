@@ -23,7 +23,7 @@ sanitize() {
 SAFE_CHANNEL=$(sanitize "$CHANNEL")
 SAFE_TITLE=$(sanitize "$TITLE")
 
-OUT_DIR="${dest_video}/${SAFE_CHANNEL}"
+OUT_DIR="${DEST_VIDEO}/${SAFE_CHANNEL}"
 mkdir -p "$OUT_DIR"
 
 TEMP_FILE="${OUT_DIR}/${SAFE_TITLE}_temp.%(ext)s"
