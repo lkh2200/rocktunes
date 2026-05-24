@@ -26,7 +26,7 @@ if h1_tag:
     heading = h1_tag.get_text(strip=True)
     # Sanitize the heading to be safe for filenames
     safe_heading = re.sub(r'[<>:"/\\|?*]', '_', heading)
-    dir_path = Path(f"~/Music/{safe_heading}").expanduser()
+    dir_path = Path(f"~/Downloads/{safe_heading}").expanduser()
     dir_path.mkdir(exist_ok=True)
     print(f"H1 Heading: {heading}")
     print(f"Created directory: {dir_path.resolve()}\n")
